@@ -1667,7 +1667,7 @@ function openReader(id) {
 
   // Option A: known blockers — navigate directly, no lock screen friction
   if(isIframeBlocked(story.url)) {
-    window.location.href = story.url;
+    window.open(story.url, '_blank');
     return;
   }
 
@@ -1690,7 +1690,7 @@ function openReader(id) {
       // timed out — navigate directly, no lock screen
       document.getElementById('reader').classList.remove('on');
       document.getElementById('shell').classList.add('on');
-      window.location.href = rdrUrl;
+      window.open(rdrUrl, '_blank');
     }
   }, 5000);
 
@@ -1707,14 +1707,14 @@ function openReader(id) {
       clearTimeout(fallbackTimer);
       document.getElementById('reader').classList.remove('on');
       document.getElementById('shell').classList.add('on');
-      window.location.href = rdrUrl;
+      window.open(rdrUrl, '_blank');
     }
   };
   iframe.onerror = function(){
     clearTimeout(fallbackTimer);
     document.getElementById('reader').classList.remove('on');
     document.getElementById('shell').classList.add('on');
-    window.location.href = rdrUrl;
+    window.open(rdrUrl, '_blank');
   };
   iframe.src = story.url;
 }
@@ -1728,7 +1728,7 @@ function closeReader() {
 }
 
 function openExt() {
-  if(rdrUrl) window.location.href = rdrUrl;
+  if(rdrUrl) window.open(rdrUrl, '_blank');
 }
 
 // ═══════════════════════════════════════════
