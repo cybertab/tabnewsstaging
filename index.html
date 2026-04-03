@@ -1000,57 +1000,8 @@ var STORIES = [
    }}
 ];
 
-// ── CLUSTERS ──
-var CLUSTERS = [
-  {
-    id:'middle-east',
-    label:'Middle East tensions',
-    status:'active',
-    statusLine:'US carrier deployed · Hormuz traffic -18% · Oil at $92',
-    storyIds:[3,7,9],
-    insight:{
-      uae:'Travel advisory: monitor. Hormuz situation affects UAE trade — watch for any port disruptions.',
-      india:'Oil at $92 = fuel price pressure incoming. Remittance routes to UAE unaffected.',
-      both:'UAE proximity gives you better ground-truth than most. India has oil import exposure. Monitor both.',
-      global:'The Strait of Hormuz carries 20% of global oil. This is a global supply chain story.'
-    },
-    nodes:['red','amber','red','amber','red'],
-    lastUpdated:'8 min ago',
-    storyCount:3
-  },
-  {
-    id:'fed-rates',
-    label:'Fed rate cycle',
-    status:'developing',
-    statusLine:'4th consecutive hold · Q2 cuts ruled out · Markets repricing Q3',
-    storyIds:[1,4,8],
-    insight:{
-      uae:'AED rates mirror Fed. High rates = strong savings yields. Watch property financing costs.',
-      india:'INR faces pressure when US rates stay elevated. RBI response is the key variable.',
-      both:'AED savings strong, India equity may face FII outflow pressure. Hold and monitor.',
-      global:'Rate-sensitive assets globally remain under pressure. Fixed income and cash outperform.'
-    },
-    nodes:['amber','amber','red','amber','amber'],
-    lastUpdated:'3 min ago',
-    storyCount:3
-  },
-  {
-    id:'india-elections',
-    label:'India 2027 elections',
-    status:'developing',
-    statusLine:'Opposition narrows gap in 4 states · Coalition talks accelerating',
-    storyIds:[5],
-    insight:{
-      uae:'NRI India investors: political risk premium building — factor into allocation sizing.',
-      india:'Election uncertainty = volatility = potential opportunity for long-term investors.',
-      both:'India-specific risk event. UAE assets unaffected. Review India equity concentration.',
-      global:'World\'s largest democracy entering election cycle — EM investors take note.'
-    },
-    nodes:['teal','teal','amber','amber','amber'],
-    lastUpdated:'1 hr ago',
-    storyCount:1
-  }
-];
+// ── CLUSTERS — populated dynamically by buildClusters() ──
+var CLUSTERS = [];
 
 // ═══════════════════════════════════════════
 // PROFILE + INSIGHT ENGINE
@@ -1851,10 +1802,18 @@ function goToCluster(id) {
 
 function renderTrending() {
   var cont = document.getElementById('trending-content');
+  // Re-sort clusters before rendering — ensures newly updated clusters rise to top
+  var statusOrder = { active: 0, developing: 1, resolved: 2 };
+  CLUSTERS.sort(function(a, b) {
+    var sd = statusOrder[a.status] - statusOrder[b.status];
+    if(sd !== 0) return sd;
+    return (b.lastPubTs || 0) - (a.lastPubTs || 0);
+  });
+
   var sections = [
-    { status:'active', label:'Active', dot:'active' },
+    { status:'active', label:'Breaking now', dot:'active' },
     { status:'developing', label:'Developing', dot:'developing' },
-    { status:'resolved', label:'Recently resolved', dot:'resolved' }
+    { status:'resolved', label:'Cooling down', dot:'resolved' }
   ];
   cont.innerHTML = '';
 
@@ -2828,7 +2787,8 @@ function relativeTime(ts) {
   var diff = Math.floor((Date.now() - ts) / 1000);
   if(diff < 60) return 'just now';
   if(diff < 3600) return Math.floor(diff/60) + ' min ago';
-  if(diff < 86400) return Math.floor(diff/3600) + ' hr ago';
+  if(diff < 10800) return Math.floor(diff/3600) + ' hr ago'; // under 3hrs: show hours
+  if(diff < 86400) return 'Today'; // 3-24hrs: show Today
   return Math.floor(diff/86400) + ' days ago';
 }
 
@@ -4981,6 +4941,226 @@ function applyFetchedStories(stories) {
 }
 
 // ── Full fetch + apply flow (called on launch and refresh) ──
+
+// ═══════════════════════════════════════════
+// CLUSTER ENGINE
+// Auto-detects story clusters from live RSS
+// Uses entity-level matching within dimensions
+// ═══════════════════════════════════════════
+
+// Entity groups — specific subjects within each dimension
+// Stories sharing same entity group = same event cluster
+var CLUSTER_ENTITY_GROUPS = {
+  monetary: {
+    'Fed Decision':    ['fed','federal reserve','fomc','powell','us rate'],
+    'RBI Policy':      ['rbi','reserve bank of india','shaktikanta','repo rate'],
+    'ECB Policy':      ['ecb','european central bank','lagarde','eurozone rate'],
+    'BOE Policy':      ['bank of england','boe','bailey','uk rate'],
+    'Rate Outlook':    ['interest rate','rate cut','rate hike','rate hold','basis points']
+  },
+  currency: {
+    'Rupee Move':      ['rupee','inr','usd/inr','aed/inr','rupee weakens','rupee strengthens'],
+    'Dollar Index':    ['dollar index','dxy','dollar strength','dollar weakness'],
+    'Remittance':      ['remittance','money transfer','wire transfer','swift'],
+    'AED Rate':        ['aed','dirham','uae currency','dollar peg']
+  },
+  markets: {
+    'Indian Markets':  ['nifty','sensex','bse','nse','dalal street','indian stock'],
+    'US Markets':      ['s&p','nasdaq','dow jones','wall street','nyse'],
+    'Gulf Markets':    ['dfm','adx','tadawul','gulf stock','dubai financial'],
+    'Market Crash':    ['market crash','circuit breaker','market halt','black monday'],
+    'IPO':             ['ipo','initial public offering','listing','debut']
+  },
+  geopolitics: {
+    'Ukraine War':     ['ukraine','zelensky','kyiv','russo-ukrainian','ukrainian'],
+    'Gaza Conflict':   ['gaza','hamas','israel','netanyahu','west bank','idf'],
+    'US-China':        ['us-china','taiwan strait','trade war','chip ban','sanctions china'],
+    'Iran':            ['iran','tehran','irgc','nuclear deal','hormuz'],
+    'US Tariffs':      ['tariff','trade tariff','customs duty','import tax','trump tariff']
+  },
+  technology: {
+    'AI Development':  ['artificial intelligence','chatgpt','openai','gemini','llm','gpt'],
+    'Tech Layoffs':    ['layoffs','tech layoff','job cuts','redundancy','retrenchment'],
+    'Semiconductor':   ['semiconductor','chip','nvidia','tsmc','chip shortage'],
+    'Big Tech':        ['apple','google','meta','amazon','microsoft','alphabet'],
+    'Cybersecurity':   ['hack','data breach','cyberattack','ransomware','cyber']
+  },
+  energy: {
+    'Oil Price':       ['oil price','crude','brent','wti','barrel','opec'],
+    'OPEC':            ['opec','opec+','production cut','oil output','saudi aramco'],
+    'Energy Crisis':   ['energy crisis','gas shortage','power cut','electricity'],
+    'Renewables':      ['solar','wind energy','renewable','green energy','ev charging']
+  },
+  sports: {
+    'IPL':             ['ipl','indian premier league','t20','cricket auction'],
+    'Cricket':         ['cricket','test match','odi','world cup cricket','bcci'],
+    'Football':        ['premier league','champions league','fifa','la liga','transfer'],
+    'F1':              ['formula 1','formula one','f1','grand prix','verstappen']
+  },
+  business: {
+    'Merger Deal':     ['merger','acquisition','takeover','buyout','deal worth'],
+    'Earnings':        ['quarterly results','earnings report','profit','revenue','q1','q2','q3','q4'],
+    'Startup':         ['startup','unicorn','funding round','series a','series b','venture capital'],
+    'Bankruptcy':      ['bankruptcy','insolvency','debt default','liquidation']
+  }
+};
+
+// Display names for cluster labels
+var CLUSTER_DIMENSION_LABELS = {
+  monetary:    'Central Banks',
+  currency:    'Currency Markets',
+  markets:     'Stock Markets',
+  geopolitics: 'Global Politics',
+  technology:  'Tech & AI',
+  energy:      'Oil & Energy',
+  sports:      'Sports',
+  business:    'Business'
+};
+
+// Cluster status based on age of most recent story
+function getClusterStatus(latestPubTs) {
+  var ageHrs = (Date.now() - latestPubTs) / 3600000;
+  if(ageHrs < 6)  return 'active';
+  if(ageHrs < 48) return 'developing';
+  return 'resolved';
+}
+
+// Score story against a specific entity group
+function scoreEntityGroup(story, keywords) {
+  var hl = (story.h || '').toLowerCase();
+  var bd = (story.b || '').toLowerCase();
+  var score = 0;
+  keywords.forEach(function(kw) {
+    if(hl.indexOf(kw) > -1) score += 3;
+    else if(bd.indexOf(kw) > -1) score += 1;
+  });
+  return score;
+}
+
+// Build timeline nodes array from stories
+function buildTimelineNodes(stories) {
+  var nodes = [];
+  stories.forEach(function(s, i) {
+    var isFirst = i === 0;
+    var isLast  = i === stories.length - 1;
+    if(isFirst) nodes.push('teal');
+    else if(isLast) nodes.push('red');
+    else nodes.push('amber');
+  });
+  return nodes;
+}
+
+// Generate cluster status line from stories
+function buildStatusLine(stories, entityLabel) {
+  var sources = [...new Set(stories.map(function(s){ return s.src; }))];
+  var sourceStr = sources.slice(0,3).join(' · ');
+  return sources.length + ' source' + (sources.length > 1 ? 's' : '') + ' · ' + sourceStr;
+}
+
+// Get cluster insight using existing insight engine
+function buildClusterInsight(stories, dimension) {
+  // Use the story with most insight relevance
+  var best = stories[stories.length - 1]; // most recent
+  var insight = getStoryInsight(best);
+  return {
+    uae:    insight,
+    india:  insight,
+    both:   insight,
+    global: insight
+  };
+}
+
+// Main clustering function — runs after RSS fetch
+function buildClusters() {
+  if(!STORIES || !STORIES.length) return;
+
+  var newClusters = [];
+  var usedStoryIds = {};
+
+  // Load persisted developing clusters from localStorage
+  var persisted = {};
+  try {
+    var stored = localStorage.getItem('tn-clusters-v1');
+    if(stored) persisted = JSON.parse(stored);
+  } catch(e) {}
+
+  // Process each dimension that has entity groups
+  var dimensions = Object.keys(CLUSTER_ENTITY_GROUPS);
+
+  dimensions.forEach(function(dim) {
+    var entityGroups = CLUSTER_ENTITY_GROUPS[dim];
+
+    Object.keys(entityGroups).forEach(function(entityLabel) {
+      var keywords = entityGroups[entityLabel];
+
+      // Find stories matching this entity group
+      var matched = STORIES.filter(function(s) {
+        if(usedStoryIds[s.id]) return false; // don't reuse stories
+        return scoreEntityGroup(s, keywords) >= 3; // minimum score threshold
+      });
+
+      if(matched.length < 2) return; // need at least 2 stories to form cluster
+
+      // Check source diversity — prefer multi-source clusters
+      var sources = matched.map(function(s){ return s.src; });
+      var uniqueSources = sources.filter(function(v, i, a){ return a.indexOf(v) === i; });
+      if(uniqueSources.length < 2 && matched.length < 3) return; // skip single-source with only 2 stories
+
+      // Sort by pubTs ascending (oldest first = chronological timeline)
+      matched.sort(function(a, b){ return a.pubTs - b.pubTs; });
+
+      // Take max 6 stories per cluster
+      var clusterStories = matched.slice(0, 6);
+
+      // Mark stories as used
+      clusterStories.forEach(function(s){ usedStoryIds[s.id] = true; });
+
+      // Build cluster object
+      var latestPubTs = Math.max.apply(null, clusterStories.map(function(s){ return s.pubTs; }));
+      var status = getClusterStatus(latestPubTs);
+      var clusterId = dim + '-' + entityLabel.toLowerCase().replace(/\s+/g, '-');
+
+      // Cluster strength score
+      var strength = clusterStories.length + (uniqueSources.length > 1 ? 2 : 0);
+
+      newClusters.push({
+        id:          clusterId,
+        label:       entityLabel,
+        dimension:   dim,
+        status:      status,
+        statusLine:  buildStatusLine(clusterStories, entityLabel),
+        storyIds:    clusterStories.map(function(s){ return s.id; }),
+        storyCount:  clusterStories.length,
+        nodes:       buildTimelineNodes(clusterStories),
+        lastUpdated: relativeTime(latestPubTs),
+        lastPubTs:   latestPubTs,
+        strength:    strength,
+        insight:     buildClusterInsight(clusterStories, dim)
+      });
+    });
+  });
+
+  // Sort clusters: Active first, then Developing, by recency within each group
+  var statusOrder = { active: 0, developing: 1, resolved: 2 };
+  newClusters.sort(function(a, b) {
+    var statusDiff = statusOrder[a.status] - statusOrder[b.status];
+    if(statusDiff !== 0) return statusDiff;
+    return b.lastPubTs - a.lastPubTs; // more recent first
+  });
+
+  // Keep max 8 clusters
+  CLUSTERS = newClusters.slice(0, 8);
+
+  // Persist developing clusters to localStorage
+  try {
+    var toStore = {};
+    CLUSTERS.forEach(function(cl){
+      if(cl.status === 'developing') toStore[cl.id] = cl;
+    });
+    localStorage.setItem('tn-clusters-v1', JSON.stringify(toStore));
+  } catch(e) {}
+}
+
 function fetchAndApplyRSS(onComplete) {
   if(!isOnline()) {
     // offline — try cache
@@ -5015,12 +5195,14 @@ function fetchAndApplyRSS(onComplete) {
     if(stories && stories.length) {
       saveFeedCache(stories);
       applyFetchedStories(stories);
+      buildClusters();
       if(onComplete) onComplete('live', stories.length);
     } else {
       // all sources failed — try cache
       var cached = loadFeedCache();
       if(cached) {
         applyFetchedStories(cached);
+        buildClusters();
         if(onComplete) onComplete('cache');
       } else {
         // use seed data — STORIES unchanged
