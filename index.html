@@ -490,7 +490,6 @@ body{background:#030710;display:flex;justify-content:center;min-height:100vh;pad
 .mkt-widget-wrap{flex:1;overflow:hidden;background:var(--dark);min-height:0}
 .mkt-widget-wrap .tradingview-widget-container{height:100%;width:100%}
 .mkt-widget-wrap .tradingview-widget-container__widget{height:calc(100% - 28px);width:100%}
-.mkt-powered{font-size:10px;color:rgba(255,255,255,0.2);text-align:center;padding:5px 0 3px;flex-shrink:0;letter-spacing:0.3px}
 .mkt-widget-attr{font-size:10px;color:rgba(255,255,255,0.2);text-align:center;padding:5px 0 3px;flex-shrink:0}
 
 /* Empty state */
@@ -6103,7 +6102,6 @@ var M_SYMBOLS = [
   // IT & Tech
   {ticker:'BSE:COFORGE',name:'Coforge',cat:'india'},
   {ticker:'BSE:LTIM',name:'LTIMindtree',cat:'india'},
-  {ticker:'BSE:LTTS',name:'LT Technology Services',cat:'india'},
   {ticker:'BSE:MPHASIS',name:'Mphasis',cat:'india'},
   {ticker:'BSE:PERSISTENT',name:'Persistent Systems',cat:'india'},
   {ticker:'BSE:DIXON',name:'Dixon Technologies',cat:'india'},
@@ -6248,6 +6246,159 @@ var M_SYMBOLS = [
   {ticker:'FX:USDCHF',name:'USD / Swiss Franc',cat:'forex'},
   {ticker:'FX:EURGBP',name:'Euro / British Pound',cat:'forex'},
   {ticker:'FX:USDHKD',name:'USD / Hong Kong Dollar',cat:'forex'},
+
+  // ── India BSE — Additional ──
+  // Banking
+  {ticker:'BSE:FEDERALBNK',name:'Federal Bank',cat:'india'},
+  {ticker:'BSE:IDFCFIRSTB',name:'IDFC First Bank',cat:'india'},
+  {ticker:'BSE:RBLBANK',name:'RBL Bank',cat:'india'},
+  {ticker:'BSE:KARURVYSYA',name:'Karur Vysya Bank',cat:'india'},
+  {ticker:'BSE:MAHABANK',name:'Bank of Maharashtra',cat:'india'},
+  {ticker:'BSE:UNIONBANK',name:'Union Bank of India',cat:'india'},
+  {ticker:'BSE:INDIANB',name:'Indian Bank',cat:'india'},
+  {ticker:'BSE:CENTRALBK',name:'Central Bank of India',cat:'india'},
+  // Finance & Insurance
+  {ticker:'BSE:AAVAS',name:'Aavas Financiers',cat:'india'},
+  {ticker:'BSE:HOMEFIRST',name:'Home First Finance',cat:'india'},
+  {ticker:'BSE:CANFINHOME',name:'Can Fin Homes',cat:'india'},
+  {ticker:'BSE:PNBHOUSING',name:'PNB Housing Finance',cat:'india'},
+  {ticker:'BSE:REPCO',name:'Repco Home Finance',cat:'india'},
+  {ticker:'BSE:CREDITACC',name:'Credit Access Grameen',cat:'india'},
+  {ticker:'BSE:FIVESTAR',name:'Five Star Business Finance',cat:'india'},
+  {ticker:'BSE:SPANDANA',name:'Spandana Sphoorty',cat:'india'},
+  {ticker:'BSE:FINPIPE',name:'Fino Payments Bank',cat:'india'},
+  // Energy & Power
+  {ticker:'BSE:NHPC',name:'NHPC',cat:'india'},
+  {ticker:'BSE:SJVN',name:'SJVN',cat:'india'},
+  {ticker:'BSE:CESC',name:'CESC',cat:'india'},
+  {ticker:'BSE:TORNTPOWER',name:'Torrent Power',cat:'india'},
+  {ticker:'BSE:ADANIENSOL',name:'Adani Energy Solutions',cat:'india'},
+  {ticker:'BSE:SUZLON',name:'Suzlon Energy',cat:'india'},
+  {ticker:'BSE:INDIAGRID',name:'India Grid Trust',cat:'india'},
+  // Metals & Mining
+  {ticker:'BSE:VEDL',name:'Vedanta',cat:'india'},
+  {ticker:'BSE:HINDZINC',name:'Hindustan Zinc',cat:'india'},
+  {ticker:'BSE:NATIONALUM',name:'National Aluminium NALCO',cat:'india'},
+  {ticker:'BSE:HINDCOPPER',name:'Hindustan Copper',cat:'india'},
+  {ticker:'BSE:SAIL',name:'Steel Authority SAIL',cat:'india'},
+  {ticker:'BSE:JSPL',name:'Jindal Steel and Power',cat:'india'},
+  {ticker:'BSE:WELCORP',name:'Welspun Corp',cat:'india'},
+  // Chemicals & Fertilisers
+  {ticker:'BSE:DEEPAKNTR',name:'Deepak Nitrite',cat:'india'},
+  {ticker:'BSE:COROMANDEL',name:'Coromandel International',cat:'india'},
+  {ticker:'BSE:CHAMBLFERT',name:'Chambal Fertilisers',cat:'india'},
+  {ticker:'BSE:BALRAMCHIN',name:'Balrampur Chini Mills',cat:'india'},
+  {ticker:'BSE:GNFC',name:'Gujarat Narmada Valley Fertilizers',cat:'india'},
+  // IT & Tech
+  {ticker:'BSE:TATAELXSI',name:'Tata Elxsi',cat:'india'},
+  {ticker:'BSE:KPITTECH',name:'KPIT Technologies',cat:'india'},
+  {ticker:'BSE:TANLA',name:'Tanla Platforms',cat:'india'},
+  {ticker:'BSE:MASTEK',name:'Mastek',cat:'india'},
+  {ticker:'BSE:CYIENT',name:'Cyient',cat:'india'},
+  {ticker:'BSE:ZENSAR',name:'Zensar Technologies',cat:'india'},
+  {ticker:'BSE:HAPPSTMNDS',name:'Happiest Minds',cat:'india'},
+  {ticker:'BSE:ROUTE',name:'Route Mobile',cat:'india'},
+  {ticker:'BSE:SONATSOFTW',name:'Sonata Software',cat:'india'},
+  // Real Estate
+  {ticker:'BSE:BRIGADE',name:'Brigade Enterprises',cat:'india'},
+  {ticker:'BSE:SOBHA',name:'Sobha',cat:'india'},
+  {ticker:'BSE:MAHLIFE',name:'Mahindra Lifespace',cat:'india'},
+  {ticker:'BSE:KOLTEPATIL',name:'Kolte Patil Developers',cat:'india'},
+  // Consumer
+  {ticker:'BSE:MCDOWELL-N',name:'United Spirits McDowell',cat:'india'},
+  {ticker:'BSE:PGHH',name:'Procter Gamble India',cat:'india'},
+  {ticker:'BSE:HONAUT',name:'Honeywell Automation',cat:'india'},
+  {ticker:'BSE:JYOTHYLAB',name:'Jyothy Labs',cat:'india'},
+  {ticker:'BSE:EMAMILTD',name:'Emami',cat:'india'},
+  {ticker:'BSE:BAJAJCON',name:'Bajaj Consumer Care',cat:'india'},
+  // Auto & Auto Ancillaries
+  {ticker:'BSE:MOTHERSON',name:'Motherson Sumi Wiring',cat:'india'},
+  {ticker:'BSE:BHARATFORG',name:'Bharat Forge',cat:'india'},
+  {ticker:'BSE:BALKRISIND',name:'Balkrishna Industries',cat:'india'},
+  {ticker:'BSE:EXIDEIND',name:'Exide Industries',cat:'india'},
+  {ticker:'BSE:AMARAJABAT',name:'Amara Raja Energy',cat:'india'},
+  {ticker:'BSE:SUNDRMFAST',name:'Sundram Fasteners',cat:'india'},
+  // Infrastructure
+  {ticker:'BSE:LTTS',name:'LT Technology Services',cat:'india'},
+  {ticker:'BSE:KEC',name:'KEC International',cat:'india'},
+  {ticker:'BSE:KALPATPOWR',name:'Kalpataru Projects',cat:'india'},
+  // ── US Stocks — Additional ──
+  // Tech
+  {ticker:'NASDAQ:ORCL',name:'Oracle',cat:'us'},
+  {ticker:'NASDAQ:CSCO',name:'Cisco Systems',cat:'us'},
+  {ticker:'NASDAQ:TXN',name:'Texas Instruments',cat:'us'},
+  {ticker:'NASDAQ:AMAT',name:'Applied Materials',cat:'us'},
+  {ticker:'NASDAQ:MU',name:'Micron Technology',cat:'us'},
+  {ticker:'NASDAQ:LRCX',name:'Lam Research',cat:'us'},
+  {ticker:'NASDAQ:KLAC',name:'KLA Corporation',cat:'us'},
+  {ticker:'NASDAQ:PANW',name:'Palo Alto Networks',cat:'us'},
+  {ticker:'NASDAQ:CRWD',name:'CrowdStrike',cat:'us'},
+  {ticker:'NASDAQ:SNOW',name:'Snowflake',cat:'us'},
+  {ticker:'NASDAQ:DDOG',name:'Datadog',cat:'us'},
+  {ticker:'NASDAQ:ZS',name:'Zscaler',cat:'us'},
+  {ticker:'NASDAQ:TEAM',name:'Atlassian',cat:'us'},
+  {ticker:'NASDAQ:WDAY',name:'Workday',cat:'us'},
+  {ticker:'NASDAQ:NOW',name:'ServiceNow',cat:'us'},
+  {ticker:'NASDAQ:INTU',name:'Intuit',cat:'us'},
+  // Healthcare & Pharma
+  {ticker:'NASDAQ:AMGN',name:'Amgen',cat:'us'},
+  {ticker:'NASDAQ:GILD',name:'Gilead Sciences',cat:'us'},
+  {ticker:'NASDAQ:REGN',name:'Regeneron',cat:'us'},
+  {ticker:'NYSE:LLY',name:'Eli Lilly',cat:'us'},
+  {ticker:'NYSE:BMY',name:'Bristol Myers Squibb',cat:'us'},
+  {ticker:'NYSE:MDT',name:'Medtronic',cat:'us'},
+  {ticker:'NYSE:SYK',name:'Stryker',cat:'us'},
+  {ticker:'NYSE:ISRG',name:'Intuitive Surgical',cat:'us'},
+  {ticker:'NYSE:ZTS',name:'Zoetis',cat:'us'},
+  {ticker:'NYSE:HUM',name:'Humana',cat:'us'},
+  // Finance
+  {ticker:'NYSE:SPGI',name:'S&P Global',cat:'us'},
+  {ticker:'NYSE:BLK',name:'BlackRock',cat:'us'},
+  {ticker:'NYSE:BX',name:'Blackstone',cat:'us'},
+  {ticker:'NYSE:KKR',name:'KKR',cat:'us'},
+  {ticker:'NYSE:APO',name:'Apollo Global Management',cat:'us'},
+  {ticker:'NYSE:MET',name:'MetLife',cat:'us'},
+  {ticker:'NYSE:PRU',name:'Prudential Financial',cat:'us'},
+  {ticker:'NYSE:AIG',name:'AIG',cat:'us'},
+  // Consumer & Retail
+  {ticker:'NYSE:LOW',name:'Lowes',cat:'us'},
+  {ticker:'NYSE:TGT',name:'Target',cat:'us'},
+  {ticker:'NYSE:TJX',name:'TJX Companies',cat:'us'},
+  {ticker:'NYSE:DLTR',name:'Dollar Tree',cat:'us'},
+  {ticker:'NYSE:DG',name:'Dollar General',cat:'us'},
+  {ticker:'NYSE:AMZN',name:'Amazon',cat:'us'},
+  // Energy
+  {ticker:'NYSE:SLB',name:'Schlumberger',cat:'us'},
+  {ticker:'NYSE:HAL',name:'Halliburton',cat:'us'},
+  {ticker:'NYSE:OXY',name:'Occidental Petroleum',cat:'us'},
+  {ticker:'NYSE:COP',name:'ConocoPhillips',cat:'us'},
+  {ticker:'NYSE:PSX',name:'Phillips 66',cat:'us'},
+  // Industrials
+  {ticker:'NYSE:HON',name:'Honeywell',cat:'us'},
+  {ticker:'NYSE:UPS',name:'UPS',cat:'us'},
+  {ticker:'NYSE:FDX',name:'FedEx',cat:'us'},
+  {ticker:'NYSE:DE',name:'John Deere',cat:'us'},
+  {ticker:'NYSE:EMR',name:'Emerson Electric',cat:'us'},
+  // ── Crypto — Additional ──
+  {ticker:'BINANCE:SHIBUSDT',name:'Shiba Inu SHIB',cat:'crypto'},
+  {ticker:'BINANCE:TRXUSDT',name:'Tron TRX',cat:'crypto'},
+  {ticker:'BINANCE:ETCUSDT',name:'Ethereum Classic ETC',cat:'crypto'},
+  {ticker:'BINANCE:XLMUSDT',name:'Stellar XLM',cat:'crypto'},
+  {ticker:'BINANCE:VETUSDT',name:'VeChain VET',cat:'crypto'},
+  {ticker:'BINANCE:FILUSDT',name:'Filecoin FIL',cat:'crypto'},
+  {ticker:'BINANCE:AAVEUSDT',name:'Aave AAVE',cat:'crypto'},
+  {ticker:'BINANCE:MKRUSDT',name:'Maker MKR',cat:'crypto'},
+  // ── Forex — Additional (South Asia & Emerging) ──
+  {ticker:'FX:USDMYR',name:'USD / Malaysian Ringgit',cat:'forex'},
+  {ticker:'FX:USDBDT',name:'USD / Bangladeshi Taka',cat:'forex'},
+  {ticker:'FX:USDPHP',name:'USD / Philippine Peso',cat:'forex'},
+  {ticker:'FX:USDTHB',name:'USD / Thai Baht',cat:'forex'},
+  {ticker:'FX:USDIDR',name:'USD / Indonesian Rupiah',cat:'forex'},
+  {ticker:'FX:USDVND',name:'USD / Vietnamese Dong',cat:'forex'},
+  {ticker:'FX:USDSAR',name:'USD / Saudi Riyal',cat:'forex'},
+  {ticker:'FX:USDQAR',name:'USD / Qatari Riyal',cat:'forex'},
+  {ticker:'FX:USDBHD',name:'USD / Bahraini Dinar',cat:'forex'},
+  {ticker:'FX:USDKWD',name:'USD / Kuwaiti Dinar',cat:'forex'},
 ];
 
 var M_DEFAULT = []; // Empty on first launch — user builds their own watchlist
@@ -6366,8 +6517,7 @@ function mInitTab(tab) {
           {s:'BSE:SENSEX',d:'SENSEX'},
           {s:'CAPITALCOM:US500',d:'S&P 500'},{s:'CAPITALCOM:US100',d:'Nasdaq 100'},
           {s:'CAPITALCOM:US30',d:'Dow Jones'},{s:'CAPITALCOM:UK100',d:'FTSE 100'},
-          {s:'XETR:DAX',d:'DAX Germany'},{s:'CAPITALCOM:JP225',d:'Nikkei 225'},
-          {s:'CAPITALCOM:HK50',d:'Hang Seng'},{s:'CAPITALCOM:AUS200',d:'ASX 200'}
+          {s:'XETR:DAX',d:'DAX Germany'},{s:'CAPITALCOM:HK50',d:'Hang Seng'}
         ],originalTitle:'Indices'},
         {title:'Commodities',symbols:[
           {s:'TVC:GOLD',d:'Gold'},{s:'TVC:SILVER',d:'Silver'},
@@ -6697,19 +6847,16 @@ function mToggleAddById(e, btn) {
     <!-- Overview -->
     <div id="mkt-view-overview" class="mkt-view">
       <div id="mkt-overview-wrap" class="mkt-widget-wrap"></div>
-      <div class="mkt-powered">Powered by <a href="https://www.tradingview.com/" target="_blank" rel="noopener" style="color:rgba(79,142,247,0.7)">TradingView</a></div>
     </div>
 
     <!-- Forex -->
     <div id="mkt-view-forex" class="mkt-view">
       <div id="mkt-forex-wrap" class="mkt-widget-wrap"></div>
-      <div class="mkt-powered">Powered by <a href="https://www.tradingview.com/" target="_blank" rel="noopener" style="color:rgba(79,142,247,0.7)">TradingView</a></div>
     </div>
 
     <!-- Crypto -->
     <div id="mkt-view-crypto" class="mkt-view">
       <div id="mkt-crypto-wrap" class="mkt-widget-wrap"></div>
-      <div class="mkt-powered">Powered by <a href="https://www.tradingview.com/" target="_blank" rel="noopener" style="color:rgba(79,142,247,0.7)">TradingView</a></div>
     </div>
 
   </div><!-- /mkt-content -->
