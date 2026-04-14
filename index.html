@@ -469,9 +469,11 @@ body{background:#030710;display:flex;justify-content:center;min-height:100vh;pad
 
 /* Header */
 .mkt-hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 18px 12px;background:var(--navy);border-bottom:0.5px solid var(--border);flex-shrink:0}
+.mkt-title-wrap{display:flex;flex-direction:column;gap:1px;align-items:center}
+.mkt-product-tag{font-size:8px;color:rgba(15,244,198,0.5);letter-spacing:2px;font-weight:600;text-transform:uppercase}
 .mkt-title{font-size:16px;font-weight:700;letter-spacing:-0.3px}
 .mkt-title span{color:var(--teal)}
-.mkt-back{font-size:14px;color:var(--blue);background:none;border:none;font-family:'DM Sans',sans-serif;cursor:pointer;padding:0}
+.mkt-back{font-size:13px;font-weight:600;color:var(--blue);background:rgba(79,142,247,0.1);border:0.5px solid rgba(79,142,247,0.25);font-family:'DM Sans',sans-serif;cursor:pointer;padding:5px 10px;border-radius:8px;letter-spacing:0.1px}
 .mkt-refresh-btn{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.5);font-size:15px;display:flex;align-items:center;justify-content:center;cursor:pointer;line-height:1}
 .mkt-counter{font-size:11px;color:var(--muted);font-weight:500;letter-spacing:0.3px}
 .mkt-add-btn{width:32px;height:32px;border-radius:50%;background:rgba(79,142,247,0.12);border:1px solid rgba(79,142,247,0.25);color:var(--blue);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1}
@@ -488,6 +490,7 @@ body{background:#030710;display:flex;justify-content:center;min-height:100vh;pad
 .mkt-widget-wrap{flex:1;overflow:hidden;background:var(--dark);min-height:0}
 .mkt-widget-wrap .tradingview-widget-container{height:100%;width:100%}
 .mkt-widget-wrap .tradingview-widget-container__widget{height:calc(100% - 28px);width:100%}
+.mkt-powered{font-size:10px;color:rgba(255,255,255,0.2);text-align:center;padding:5px 0 3px;flex-shrink:0;letter-spacing:0.3px}
 .mkt-widget-attr{font-size:10px;color:rgba(255,255,255,0.2);text-align:center;padding:5px 0 3px;flex-shrink:0}
 
 /* Empty state */
@@ -6360,20 +6363,21 @@ function mInitTab(tab) {
       symbolActiveColor:'rgba(79,142,247,0.1)',
       tabs:[
         {title:'Indices',symbols:[
-          {s:'BSE:SENSEX',d:'SENSEX'},{s:'BSE:BANKEX',d:'BSE Bankex'},
+          {s:'BSE:SENSEX',d:'SENSEX'},
           {s:'CAPITALCOM:US500',d:'S&P 500'},{s:'CAPITALCOM:US100',d:'Nasdaq 100'},
           {s:'CAPITALCOM:US30',d:'Dow Jones'},{s:'CAPITALCOM:UK100',d:'FTSE 100'},
-          {s:'XETR:DAX',d:'DAX Germany'},{s:'INDEX:NI225',d:'Nikkei 225'}
+          {s:'XETR:DAX',d:'DAX Germany'},{s:'CAPITALCOM:JP225',d:'Nikkei 225'},
+          {s:'CAPITALCOM:HK50',d:'Hang Seng'},{s:'CAPITALCOM:AUS200',d:'ASX 200'}
         ],originalTitle:'Indices'},
         {title:'Commodities',symbols:[
           {s:'TVC:GOLD',d:'Gold'},{s:'TVC:SILVER',d:'Silver'},
           {s:'TVC:USOIL',d:'Crude Oil WTI'},{s:'TVC:UKOIL',d:'Brent Crude'},
-          {s:'TVC:NATURALGAS',d:'Natural Gas'},{s:'TVC:COPPER',d:'Copper'}
+          {s:'TVC:PLATINUM',d:'Platinum'},{s:'TVC:PALLADIUM',d:'Palladium'}
         ],originalTitle:'Commodities'},
         {title:'Forex',symbols:[
-          {s:'FX:USDINR',d:'USD/INR'},{s:'OANDA:USDAED_CFD',d:'USD/AED'},
-          {s:'FX:EURUSD',d:'EUR/USD'},{s:'FX:GBPUSD',d:'GBP/USD'},
-          {s:'FX:USDJPY',d:'USD/JPY'},{s:'FX:USDSGD',d:'USD/SGD'}
+          {s:'FX:USDINR',d:'USD/INR'},{s:'FX:EURUSD',d:'EUR/USD'},
+          {s:'FX:GBPUSD',d:'GBP/USD'},{s:'FX:USDJPY',d:'USD/JPY'},
+          {s:'FX:USDCAD',d:'USD/CAD'},{s:'FX:AUDUSD',d:'AUD/USD'}
         ],originalTitle:'Forex'},
         {title:'Crypto',symbols:[
           {s:'BITSTAMP:BTCUSD',d:'Bitcoin'},{s:'BITSTAMP:ETHUSD',d:'Ethereum'},
@@ -6661,7 +6665,10 @@ function mToggleAddById(e, btn) {
   <!-- Markets Header -->
   <div class="mkt-hdr">
     <button class="mkt-back" onclick="closeMarkets()">← Feed</button>
-    <div class="mkt-title">Tab<span>Markets</span></div>
+    <div class="mkt-title-wrap">
+      <div class="mkt-title">Tab<span>Markets</span></div>
+      <div class="mkt-product-tag">A CYBERTABX PRODUCT</div>
+    </div>
     <div style="display:flex;align-items:center;gap:8px"><button class="mkt-refresh-btn" id="mkt-refresh-btn" onclick="mRefresh()">&#8635;</button><span class="mkt-counter" id="mkt-counter">0/8</span><button class="mkt-add-btn" id="mkt-add-btn" onclick="mOpenSheet()">+</button></div>
   </div>
 
@@ -6690,16 +6697,19 @@ function mToggleAddById(e, btn) {
     <!-- Overview -->
     <div id="mkt-view-overview" class="mkt-view">
       <div id="mkt-overview-wrap" class="mkt-widget-wrap"></div>
+      <div class="mkt-powered">Powered by <a href="https://www.tradingview.com/" target="_blank" rel="noopener" style="color:rgba(79,142,247,0.7)">TradingView</a></div>
     </div>
 
     <!-- Forex -->
     <div id="mkt-view-forex" class="mkt-view">
       <div id="mkt-forex-wrap" class="mkt-widget-wrap"></div>
+      <div class="mkt-powered">Powered by <a href="https://www.tradingview.com/" target="_blank" rel="noopener" style="color:rgba(79,142,247,0.7)">TradingView</a></div>
     </div>
 
     <!-- Crypto -->
     <div id="mkt-view-crypto" class="mkt-view">
       <div id="mkt-crypto-wrap" class="mkt-widget-wrap"></div>
+      <div class="mkt-powered">Powered by <a href="https://www.tradingview.com/" target="_blank" rel="noopener" style="color:rgba(79,142,247,0.7)">TradingView</a></div>
     </div>
 
   </div><!-- /mkt-content -->
