@@ -472,6 +472,7 @@ body{background:#030710;display:flex;justify-content:center;min-height:100vh;pad
 .mkt-title{font-size:16px;font-weight:700;letter-spacing:-0.3px}
 .mkt-title span{color:var(--teal)}
 .mkt-back{font-size:14px;color:var(--blue);background:none;border:none;font-family:'DM Sans',sans-serif;cursor:pointer;padding:0}
+.mkt-counter{font-size:11px;color:var(--muted);font-weight:500;letter-spacing:0.3px}
 .mkt-add-btn{width:32px;height:32px;border-radius:50%;background:rgba(79,142,247,0.12);border:1px solid rgba(79,142,247,0.25);color:var(--blue);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1}
 
 /* Sub tabs */
@@ -6234,13 +6235,13 @@ var M_SYMBOLS = [
   {ticker:'INDEX:NI225',name:'Nikkei 225',cat:'indices'},
   {ticker:'INDEX:HSI',name:'Hang Seng',cat:'indices'},
   // Commodities
-  {ticker:'COMEX:GC1!',name:'Gold',cat:'commodity'},
-  {ticker:'COMEX:SI1!',name:'Silver',cat:'commodity'},
-  {ticker:'NYMEX:CL1!',name:'Crude Oil WTI',cat:'commodity'},
-  {ticker:'ICEEUR:BRN1!',name:'Brent Crude',cat:'commodity'},
+  {ticker:'TVC:GOLD',name:'Gold',cat:'commodity'},
+  {ticker:'TVC:SILVER',name:'Silver',cat:'commodity'},
+  {ticker:'TVC:USOIL',name:'Crude Oil WTI',cat:'commodity'},
+  {ticker:'TVC:UKOIL',name:'Brent Crude',cat:'commodity'},
   {ticker:'NYMEX:NG1!',name:'Natural Gas',cat:'commodity'},
-  {ticker:'COMEX:HG1!',name:'Copper',cat:'commodity'},
-  {ticker:'COMEX:PL1!',name:'Platinum',cat:'commodity'},
+  {ticker:'TVC:PLATINUM',name:'Platinum',cat:'commodity'},
+  {ticker:'TVC:COPPER',name:'Copper',cat:'commodity'},
   // Crypto
   {ticker:'BITSTAMP:BTCUSD',name:'Bitcoin',cat:'crypto'},
   {ticker:'BITSTAMP:ETHUSD',name:'Ethereum',cat:'crypto'},
@@ -6271,7 +6272,7 @@ var M_DEFAULT = [
   {ticker:'BITSTAMP:BTCUSD',name:'Bitcoin'},
   {ticker:'NSE:NIFTY',name:'NIFTY 50'},
   {ticker:'FOREXCOM:SPXUSD',name:'S&P 500'},
-  {ticker:'COMEX:GC1!',name:'Gold'},
+  {ticker:'TVC:GOLD',name:'Gold'},
   {ticker:'FX:USDINR',name:'USD / INR'},
   {ticker:'NSE:RELIANCE',name:'Reliance Industries'},
   {ticker:'NASDAQ:AAPL',name:'Apple Inc'},
@@ -6303,6 +6304,7 @@ function openMarkets() {
   document.getElementById('shell').classList.remove('on');
   document.getElementById('markets').classList.add('on');
   // Init watchlist on first open
+  mUpdateCounter();
   if(!mInited.watchlist) {
     mInited.watchlist = true;
     mRenderWatchlist();
@@ -6330,6 +6332,11 @@ function mSetTab(tab, el) {
   el.classList.add('on');
   document.querySelectorAll('.mkt-view').forEach(function(v){ v.classList.remove('on'); });
   document.getElementById('mkt-view-'+tab).classList.add('on');
+  // Show + button and counter only on watchlist tab
+  var addBtn = document.getElementById('mkt-add-btn');
+  var counter = document.getElementById('mkt-counter');
+  if(addBtn) addBtn.style.display = tab === 'watchlist' ? 'flex' : 'none';
+  if(counter) counter.style.display = tab === 'watchlist' ? 'block' : 'none';
   // Lazy init
   if(!mInited[tab]) {
     mInited[tab] = true;
@@ -6356,8 +6363,9 @@ function mInitTab(tab) {
           {s:'FOREXCOM:DJI',d:'Dow Jones'},{s:'INDEX:FTSE',d:'FTSE 100'}
         ],originalTitle:'Indices'},
         {title:'Commodities',symbols:[
-          {s:'COMEX:GC1!',d:'Gold'},{s:'NYMEX:CL1!',d:'Crude Oil'},
-          {s:'COMEX:SI1!',d:'Silver'},{s:'NYMEX:NG1!',d:'Natural Gas'}
+          {s:'TVC:GOLD',d:'Gold'},{s:'TVC:USOIL',d:'Crude Oil WTI'},
+          {s:'TVC:SILVER',d:'Silver'},{s:'TVC:UKOIL',d:'Brent Crude'},
+          {s:'NYMEX:NG1!',d:'Natural Gas'}
         ],originalTitle:'Commodities'},
         {title:'Forex',symbols:[
           {s:'FX:USDINR',d:'USD/INR'},{s:'FX:USDAED',d:'USD/AED'},
@@ -6425,7 +6433,13 @@ function mCreateWidget(wrapperId, scriptSrc, config) {
 }
 
 // ── Watchlist render ──
+function mUpdateCounter() {
+  var el = document.getElementById('mkt-counter');
+  if(el) el.textContent = mWatchlist.length + '/12';
+}
+
 function mRenderWatchlist() {
+  mUpdateCounter();
   if(!mWatchlist.length) {
     document.getElementById('mkt-watchlist-wrap').innerHTML = '<div class="mkt-empty"><div class="mkt-empty-icon">📊</div><div class="mkt-empty-title">Your watchlist is empty</div><div class="mkt-empty-sub">Tap + to add stocks, indices,<br>crypto or forex</div></div>';
     return;
@@ -6523,12 +6537,18 @@ function mToggleAddById(e, btn) {
     mWatchlist.splice(idx, 1);
     showToast('Removed from watchlist');
   } else {
+    if(mWatchlist.length >= 12) {
+      showToast('Watchlist full — remove a symbol first');
+      return;
+    }
     mWatchlist.push({ticker:ticker, name:name});
     showToast('Added to watchlist');
   }
   mSaveWatchlist();
+  mUpdateCounter();
   mFilterSymbols(document.getElementById('mkt-search').value);
   if(mActiveSubTab === 'watchlist' && mMarketsOpen) { mRenderWatchlist(); }
+  // Sheet stays open — user can keep adding/removing
 }
 
 
@@ -6541,7 +6561,7 @@ function mToggleAddById(e, btn) {
   <div class="mkt-hdr">
     <button class="mkt-back" onclick="closeMarkets()">← Feed</button>
     <div class="mkt-title">Tab<span>Markets</span></div>
-    <button class="mkt-add-btn" onclick="mOpenSheet()">+</button>
+    <div style="display:flex;align-items:center;gap:8px"><span class="mkt-counter" id="mkt-counter">0/12</span><button class="mkt-add-btn" id="mkt-add-btn" onclick="mOpenSheet()">+</button></div>
   </div>
 
   <!-- Sub tabs -->
