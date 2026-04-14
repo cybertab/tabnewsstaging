@@ -472,6 +472,7 @@ body{background:#030710;display:flex;justify-content:center;min-height:100vh;pad
 .mkt-title{font-size:16px;font-weight:700;letter-spacing:-0.3px}
 .mkt-title span{color:var(--teal)}
 .mkt-back{font-size:14px;color:var(--blue);background:none;border:none;font-family:'DM Sans',sans-serif;cursor:pointer;padding:0}
+.mkt-refresh-btn{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.5);font-size:15px;display:flex;align-items:center;justify-content:center;cursor:pointer;line-height:1}
 .mkt-counter{font-size:11px;color:var(--muted);font-weight:500;letter-spacing:0.3px}
 .mkt-add-btn{width:32px;height:32px;border-radius:50%;background:rgba(79,142,247,0.12);border:1px solid rgba(79,142,247,0.25);color:var(--blue);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1}
 
@@ -490,6 +491,19 @@ body{background:#030710;display:flex;justify-content:center;min-height:100vh;pad
 .mkt-widget-attr{font-size:10px;color:rgba(255,255,255,0.2);text-align:center;padding:5px 0 3px;flex-shrink:0}
 
 /* Empty state */
+
+.mkt-cards-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.mkt-card-wrap{position:relative;height:130px;border-radius:12px;overflow:hidden;flex-shrink:0}
+.mkt-card-overlay{position:absolute;inset:0;z-index:2;cursor:pointer;background:transparent}
+.mkt-card-remove{position:absolute;top:6px;right:6px;z-index:3;width:22px;height:22px;border-radius:50%;background:rgba(0,0,0,0.55);border:0.5px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.8);font-size:13px;display:flex;align-items:center;justify-content:center;cursor:pointer;line-height:1}
+.mkt-card-remove:active{background:rgba(220,50,50,0.7)}
+.mkt-card-wrap .tradingview-widget-container{height:100%;width:100%}
+.mkt-card-wrap .tradingview-widget-container__widget{height:100%;width:100%}
+.mkt-empty-state{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:40px 24px;text-align:center}
+.mkt-empty-state .mkt-empty-icon{font-size:40px;opacity:0.3}
+.mkt-empty-state .mkt-empty-title{font-size:15px;font-weight:600;color:rgba(255,255,255,0.5)}
+.mkt-empty-state .mkt-empty-sub{font-size:12px;color:rgba(255,255,255,0.3);line-height:1.6}
+
 .mkt-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:40px 24px;text-align:center}
 .mkt-empty-icon{font-size:36px;opacity:0.35}
 .mkt-empty-title{font-size:15px;font-weight:600;color:rgba(255,255,255,0.5)}
@@ -6268,15 +6282,7 @@ var M_SYMBOLS = [
   {ticker:'FX:USDCNY',name:'USD / Chinese Yuan',cat:'forex'},
 ];
 
-var M_DEFAULT = [
-  {ticker:'BITSTAMP:BTCUSD',name:'Bitcoin'},
-  {ticker:'NSE:NIFTY',name:'NIFTY 50'},
-  {ticker:'FOREXCOM:SPXUSD',name:'S&P 500'},
-  {ticker:'TVC:GOLD',name:'Gold'},
-  {ticker:'FX:USDINR',name:'USD / INR'},
-  {ticker:'NSE:RELIANCE',name:'Reliance Industries'},
-  {ticker:'NASDAQ:AAPL',name:'Apple Inc'},
-];
+var M_DEFAULT = []; // Empty on first launch — user builds their own watchlist
 
 var mWatchlist = [];
 var mActiveCat = 'all';
@@ -6309,6 +6315,25 @@ function openMarkets() {
     mInited.watchlist = true;
     mRenderWatchlist();
   }
+}
+
+function mRefresh() {
+  var btn = document.getElementById('mkt-refresh-btn');
+  if(btn) { btn.style.opacity = '0.4'; btn.style.transform = 'rotate(180deg)'; }
+  setTimeout(function(){
+    if(btn) { btn.style.opacity = '1'; btn.style.transform = 'rotate(0deg)'; }
+  }, 600);
+
+  if(mActiveSubTab === 'watchlist') {
+    mRenderWatchlist();
+    return;
+  }
+  // For other tabs — destroy and re-create widget
+  mInited[mActiveSubTab] = false;
+  var wrapId = 'mkt-' + mActiveSubTab + '-wrap';
+  var wrap = document.getElementById(wrapId);
+  if(wrap) wrap.innerHTML = '';
+  mInitTab(mActiveSubTab);
 }
 
 function closeMarkets() {
@@ -6400,10 +6425,13 @@ function mInitTab(tab) {
     return;
   }
   if(tab === 'crypto') {
-    mCreateWidget('mkt-crypto-wrap', 'https://s3.tradingview.com/external-embedding/embed-widget-screener.js', {
+    mCreateWidget('mkt-crypto-wrap', 'https://s3.tradingview.com/external-embedding/embed-widget-crypto-mkt-screener.js', {
       width:'100%', height:'100%',
-      defaultColumn:'overview', screener_type:'crypto_mkt',
-      displayCurrency:'USD', colorTheme:'dark', locale:'en', isTransparent:false
+      defaultColumn:'overview',
+      displayCurrency:'USD',
+      colorTheme:'dark',
+      locale:'en',
+      isTransparent:false
     });
   }
 }
@@ -6434,33 +6462,104 @@ function mCreateWidget(wrapperId, scriptSrc, config) {
 }
 
 // ── Watchlist render ──
+var mCardCount = 0;
+
 function mUpdateCounter() {
   var el = document.getElementById('mkt-counter');
-  if(el) el.textContent = mWatchlist.length + '/12';
+  var btn = document.getElementById('mkt-add-btn');
+  var count = mWatchlist.length;
+  if(el) {
+    el.textContent = count + '/8';
+    el.style.color = count >= 8 ? '#ff5050' : 'rgba(255,255,255,0.4)';
+  }
+  if(btn) btn.style.opacity = count >= 8 ? '0.4' : '1';
 }
 
-var mWatchlistRenderCount = 0;
+function mCreateCard(wObj, index) {
+  mCardCount++;
+  var cardId = 'mkt-card-' + mCardCount;
+  var wrap = document.createElement('div');
+  wrap.className = 'mkt-card-wrap';
+  wrap.id = cardId + '-wrap';
+  wrap.setAttribute('data-ticker', wObj.ticker);
+
+  // Transparent overlay — catches tap to open chart
+  var overlay = document.createElement('div');
+  overlay.className = 'mkt-card-overlay';
+  overlay.onclick = (function(t, n){ return function(e){ e.stopPropagation(); mOpenChart(t, n); }; })(wObj.ticker, wObj.name);
+
+  // Remove button
+  var rmBtn = document.createElement('div');
+  rmBtn.className = 'mkt-card-remove';
+  rmBtn.innerHTML = '&#10005;';
+  rmBtn.onclick = (function(t){ return function(e){ e.stopPropagation(); mRemoveSymbol(t); }; })(wObj.ticker);
+
+  // Mini Chart widget container
+  var container = document.createElement('div');
+  container.className = 'tradingview-widget-container';
+  container.style.cssText = 'height:100%;width:100%';
+  var inner = document.createElement('div');
+  inner.className = 'tradingview-widget-container__widget';
+  inner.style.cssText = 'height:100%;width:100%';
+  container.appendChild(inner);
+
+  // Script
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js?t=' + Date.now() + '-' + mCardCount;
+  script.async = true;
+  script.innerHTML = JSON.stringify({
+    symbol: wObj.ticker,
+    width: '100%',
+    height: 130,
+    locale: 'en',
+    dateRange: '1D',
+    colorTheme: 'dark',
+    isTransparent: false,
+    autosize: true,
+    largeChartUrl: ''
+  });
+  container.appendChild(script);
+
+  wrap.appendChild(container);
+  wrap.appendChild(overlay);
+  wrap.appendChild(rmBtn);
+  return wrap;
+}
+
 function mRenderWatchlist() {
   mUpdateCounter();
-  var outer = document.getElementById('mkt-watchlist-outer');
-  // Option D: fresh child div with unique ID — TradingView never sees duplicate
-  mWatchlistRenderCount++;
-  var newId = 'mkt-wl-' + mWatchlistRenderCount;
-  var fresh = document.createElement('div');
-  fresh.id = newId;
-  fresh.style.cssText = 'height:100%;width:100%';
-  outer.innerHTML = '';
-  outer.appendChild(fresh);
+  var container = document.getElementById('mkt-watchlist-cards');
+  container.innerHTML = '';
 
   if(!mWatchlist.length) {
-    fresh.innerHTML = '<div class="mkt-empty"><div class="mkt-empty-icon">📊</div><div class="mkt-empty-title">Your watchlist is empty</div><div class="mkt-empty-sub">Tap + to add stocks, indices,<br>crypto or forex</div></div>';
+    var empty = document.createElement('div');
+    empty.className = 'mkt-empty-state';
+    empty.innerHTML = '<div class="mkt-empty-icon">📊</div>'
+      + '<div class="mkt-empty-title">Your watchlist is empty</div>'
+      + '<div class="mkt-empty-sub">Tap + to add stocks, crypto,<br>indices, forex or commodities</div>';
+    container.appendChild(empty);
     return;
   }
-  mCreateWidget(newId, 'https://s3.tradingview.com/external-embedding/embed-widget-market-quotes.js', {
-    title:'My Watchlist',
-    symbols: mWatchlist.map(function(w){ return {name:w.ticker, displayName:w.name}; }),
-    colorTheme:'dark', isTransparent:false, locale:'en', width:'100%', height:'100%'
+
+  mWatchlist.forEach(function(w, i) {
+    container.appendChild(mCreateCard(w, i));
   });
+}
+
+function mRemoveSymbol(ticker) {
+  var idx = mWatchlist.findIndex(function(w){ return w.ticker === ticker; });
+  if(idx === -1) return;
+  mWatchlist.splice(idx, 1);
+  mSaveWatchlist();
+  // Remove just this card from DOM (no full re-render)
+  var cards = document.getElementById('mkt-watchlist-cards');
+  var card = cards.querySelector('[data-ticker="' + ticker + '"]');
+  if(card) card.remove();
+  // Show empty state if needed
+  if(!mWatchlist.length) mRenderWatchlist();
+  mUpdateCounter();
+  showToast('Removed from watchlist');
 }
 
 // ── Chart ──
@@ -6549,8 +6648,8 @@ function mToggleAddById(e, btn) {
     mWatchlist.splice(idx, 1);
     showToast('Removed from watchlist');
   } else {
-    if(mWatchlist.length >= 12) {
-      showToast('Watchlist full — remove a symbol first');
+    if(mWatchlist.length >= 8) {
+      showToast('Watchlist full (8/8) — remove a symbol first');
       return;
     }
     mWatchlist.push({ticker:ticker, name:name});
@@ -6559,7 +6658,15 @@ function mToggleAddById(e, btn) {
   mSaveWatchlist();
   mUpdateCounter();
   mFilterSymbols(document.getElementById('mkt-search').value);
-  if(mActiveSubTab === 'watchlist' && mMarketsOpen) { mRenderWatchlist(); }
+  // Append new card directly without full re-render
+  if(mMarketsOpen && idx === -1) {
+    var cards = document.getElementById('mkt-watchlist-cards');
+    // Remove empty state if present
+    var emptyEl = cards.querySelector('.mkt-empty-state');
+    if(emptyEl) emptyEl.remove();
+    var newW = mWatchlist[mWatchlist.length - 1];
+    cards.appendChild(mCreateCard(newW, mWatchlist.length - 1));
+  }
   // Sheet stays open — user can keep adding/removing
 }
 
@@ -6573,7 +6680,7 @@ function mToggleAddById(e, btn) {
   <div class="mkt-hdr">
     <button class="mkt-back" onclick="closeMarkets()">← Feed</button>
     <div class="mkt-title">Tab<span>Markets</span></div>
-    <div style="display:flex;align-items:center;gap:8px"><span class="mkt-counter" id="mkt-counter">0/12</span><button class="mkt-add-btn" id="mkt-add-btn" onclick="mOpenSheet()">+</button></div>
+    <div style="display:flex;align-items:center;gap:8px"><button class="mkt-refresh-btn" id="mkt-refresh-btn" onclick="mRefresh()">&#8635;</button><span class="mkt-counter" id="mkt-counter">0/8</span><button class="mkt-add-btn" id="mkt-add-btn" onclick="mOpenSheet()">+</button></div>
   </div>
 
   <!-- Sub tabs -->
@@ -6589,7 +6696,7 @@ function mToggleAddById(e, btn) {
 
     <!-- Watchlist -->
     <div id="mkt-view-watchlist" class="mkt-view on">
-      <div id="mkt-watchlist-outer" class="mkt-widget-wrap"><div id="mkt-watchlist-wrap"></div></div>
+      <div id="mkt-watchlist-cards" class="mkt-cards-scroll"></div>
     </div>
 
     <!-- Overview -->
