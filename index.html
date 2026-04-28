@@ -1467,7 +1467,12 @@ function switchTab(tab) {
   document.getElementById('ttab-tabdeals').classList.toggle('on', tab==='tabdeals');
   if(tab==='tabdeals') {
     switchView('tabdeals');
-    bnav('feed');  // keep feed highlighted in bottom nav
+    // Manually highlight feed in bottom nav WITHOUT calling bnav()
+    // bnav() calls switchView() which would undo the tabdeals view switch
+    ['feed','trending','saved','markets'].forEach(function(name){
+      var el = document.getElementById('bn-'+name);
+      if(el) el.classList.toggle('on', name==='feed');
+    });
     tdInit();
     // Restore scroll position
     setTimeout(function() {
